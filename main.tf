@@ -1,46 +1,53 @@
-resource "azurerm_resource_group" "hommelab_rg" {
-  name     = var.rg_name
+
+# Homelab Resource Group
+
+resource "azurerm_resource_group" "homelab" {
+  name     = var.names.rg 
   location = var.location
 }
 
+# Homelab Networking
 resource "azurerm_virtual_network" "homelab_vnet" {
-  name                = "homelab-vnet"
-  location            = azurerm_resource_group.hommelab_rg.location  
-  resource_group_name = azurerm_resource_group.hommelab_rg.name       
-  address_space       = ["10.0.0.0/16"]
+  name                = var.names.vnet                        
+  location            = azurerm_resource_group.homelab.location
+  resource_group_name = azurerm_resource_group.homelab.name
+  address_space       = var.vnet_address_space                
 
-  depends_on = [ azurerm_resource_group.hommelab_rg ]                
+  depends_on = [azurerm_resource_group.homelab]
 }
 
 resource "azurerm_subnet" "aks_subnet" {
-  name                 = "aks-engine-subnet"
-  resource_group_name  = azurerm_resource_group.hommelab_rg.name      
+  name                 = var.names.aks_subnet                  
+  resource_group_name  = azurerm_resource_group.homelab.name
   virtual_network_name = azurerm_virtual_network.homelab_vnet.name
-  address_prefixes     = ["10.0.0.0/22"]
-  
-  depends_on = [ azurerm_virtual_network.homelab_vnet ]
+  address_prefixes     = [var.aks_subnet_prefix]             
+
+  depends_on = [azurerm_virtual_network.homelab_vnet]
 }
 
-resource "azurerm_container_registry" "acr" {
-  name                = "gbenehomelabacr"
-  location            = azurerm_resource_group.hommelab_rg.location   
-  resource_group_name = azurerm_resource_group.hommelab_rg.name       
 
-  sku           = "Standard"
+# Homelab ACR
+resource "azurerm_container_registry" "acr" {
+  name                = var.names.acr 
+  location            = azurerm_resource_group.homelab.location
+  resource_group_name = azurerm_resource_group.homelab.name
+
+  sku           = var.acr_sku                                
   admin_enabled = true
 
-  depends_on = [ azurerm_resource_group.hommelab_rg ]                 
+  depends_on = [azurerm_resource_group.homelab]
 }
 
-# AKS Cluster definition
-resource "azurerm_kubernetes_cluster" "aks" {
-  name                = "aks-engine-homelab"
-  location            = azurerm_resource_group.hommelab_rg.location   
-  resource_group_name = azurerm_resource_group.hommelab_rg.name       
 
-  dns_prefix         = "aks-engine-homelab"
+#Homelab AKS Cluster
+resource "azurerm_kubernetes_cluster" "aks" {
+  name                = var.names.aks
+  location            = azurerm_resource_group.homelab.location
+  resource_group_name = azurerm_resource_group.homelab.name
+
+  dns_prefix         = var.names.dns_prefix
   kubernetes_version = var.kubernetes_version
-  sku_tier           = "Free"
+  sku_tier           = var.aks_sku_tier
 
   # System-assigned managed identity
   identity {
@@ -57,22 +64,23 @@ resource "azurerm_kubernetes_cluster" "aks" {
 
   # Default/system node pool
   default_node_pool {
-    name           = "systemnp"
-    vm_size        = "Standard_D2ps_v6"
+    name           = var.system_node_pool.name
+    vm_size        = var.system_node_pool.vm_size
     type           = "VirtualMachineScaleSets"
     vnet_subnet_id = azurerm_subnet.aks_subnet.id
 
-    auto_scaling_enabled = true 
-    min_count           = 1
-    max_count           = 2
+    auto_scaling_enabled = true
+    min_count            = var.system_node_pool.min_count
+    max_count            = var.system_node_pool.max_count
   }
 
   # Azure CNI, node subnet only
   network_profile {
-    network_plugin    = "azure" 
+    network_plugin    = "azure"
     load_balancer_sku = "standard"
-    service_cidr = "10.1.0.0/16"
-    dns_service_ip = "10.1.0.10"
+
+    service_cidr   = var.service_cidr 
+    dns_service_ip = var.dns_service_ip 
   }
 
   # Ensure ACR is created first
@@ -81,22 +89,26 @@ resource "azurerm_kubernetes_cluster" "aks" {
   ]
 }
 
-
-# User Node Pool
+# User Node Pools
 resource "azurerm_kubernetes_cluster_node_pool" "usernp" {
-  name                  = "usernp"
+  for_each              = var.user_node_pools
+  name                  = each.key
   kubernetes_cluster_id = azurerm_kubernetes_cluster.aks.id
-  vm_size               = "Standard_D2ps_v6"
-  mode                  = "User"
-  vnet_subnet_id        = azurerm_subnet.aks_subnet.id
 
-  auto_scaling_enabled = true 
-  min_count           = 1
-  max_count           = 3
+  vm_size        = each.value.vm_size
+  mode           = "User"
+  os_type        = "Linux"
+  vnet_subnet_id = azurerm_subnet.aks_subnet.id
+
+  auto_scaling_enabled = true
+  min_count            = each.value.min_count
+  max_count            = each.value.max_count
+
+  depends_on = [azurerm_kubernetes_cluster.aks]
 }
 
+
 # AKS -> ACR Role
-# Give the AKS kubelet identity AcrPull on gbenehomelabacr
 resource "azurerm_role_assignment" "aks_to_acr" {
   scope                = azurerm_container_registry.acr.id
   role_definition_name = "AcrPull"
@@ -106,17 +118,4 @@ resource "azurerm_role_assignment" "aks_to_acr" {
     azurerm_kubernetes_cluster.aks,
     azurerm_container_registry.acr
   ]
-}
-
-
-# Outputs
-output "aks_fqdn" {
-  value       = azurerm_kubernetes_cluster.aks.fqdn
-  description = "AKS API server FQDN"
-}
-
-output "aks_kube_config" {
-  value       = azurerm_kubernetes_cluster.aks.kube_config_raw
-  sensitive   = true
-  description = "Kubeconfig for the AKS cluster"
 }
