@@ -38,6 +38,26 @@ resource "azurerm_container_registry" "acr" {
   depends_on = [azurerm_resource_group.homelab]
 }
 
+#Used for Key Vault tenant_id
+data "azurerm_client_config" "current" {}
+
+#Homelab Key Vault
+resource "azurerm_key_vault" "kv" {
+  name                = var.names.kv
+  location            = azurerm_resource_group.homelab.location
+  resource_group_name = azurerm_resource_group.homelab.name
+
+  tenant_id = data.azurerm_client_config.current.tenant_id
+  sku_name  = var.key_vault_sku
+
+  soft_delete_retention_days   = 7
+  purge_protection_enabled     = false
+  public_network_access_enabled = true
+
+  rbac_authorization_enabled = true
+
+  depends_on = [azurerm_resource_group.homelab]
+}
 
 #Homelab AKS Cluster
 resource "azurerm_kubernetes_cluster" "aks" {
@@ -117,5 +137,17 @@ resource "azurerm_role_assignment" "aks_to_acr" {
   depends_on = [
     azurerm_kubernetes_cluster.aks,
     azurerm_container_registry.acr
+  ]
+}
+
+# AKS -> Key Vault Role
+resource "azurerm_role_assignment" "aks_to_kv" {
+  scope                = azurerm_key_vault.kv.id
+  role_definition_name = "Key Vault Secrets User"
+  principal_id         = azurerm_kubernetes_cluster.aks.identity[0].principal_id
+
+  depends_on = [
+    azurerm_kubernetes_cluster.aks,
+    azurerm_key_vault.kv
   ]
 }

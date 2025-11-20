@@ -1,18 +1,20 @@
-## Global names (RG, AKS, ACR, VNet, Subnet)
+## Global names (RG, AKS, ACR, VNet, Subnet, Key Vault)
 variable "names" {
   description = "Logical names for core resources"
   type = object({
     rg         = string
     aks        = string
     acr        = string
+    kv         = string
     vnet       = string
     aks_subnet = string
     dns_prefix = string
   })
   default = {
-    rg         = "hommelab-rg"
+    rg         = "homelab-rg"
     aks        = "aks-engine-homelab"
     acr        = "gbenehomelabacr"
+    kv         = "gbenehomelab-kv"
     vnet       = "homelab-vnet"
     aks_subnet = "aks-engine-subnet"
     dns_prefix = "aks-engine-homelab"
@@ -65,6 +67,13 @@ variable "aks_sku_tier" {
   default     = "Free"
 }
 
+## Key Vault SKU
+variable "key_vault_sku" {
+  description = "SKU for Azure Key Vault"
+  type        = string
+  default     = "standard"
+}
+
 ## ACR SKU
 variable "acr_sku" {
   description = "SKU for the Azure Container Registry"
@@ -89,7 +98,7 @@ variable "system_node_pool" {
   }
 }
 
-## User node pools (for_each friendly)
+## User node pools
 variable "user_node_pools" {
   description = "Map of user node pools"
   type = map(object({
@@ -101,7 +110,7 @@ variable "user_node_pools" {
     usernp = {
       vm_size   = "Standard_D2ps_v6"
       min_count = 1
-      max_count = 3
+      max_count = 2
     }
   }
 }
