@@ -19,6 +19,7 @@ module "networking" {
   vnet_address_space = var.vnet_address_space
   aks_subnet_name    = var.names.aks_subnet
   aks_subnet_prefix  = var.aks_subnet_prefix
+  aks_subnet_nsg_name = var.aks_subnet_nsg_name
 }
 ### Compute Module
 module "compute" {

@@ -37,23 +37,32 @@ variable "vnet_address_space" {
   default     = ["10.0.0.0/16"]
 }
 
+## AKS subnet CIDR
 variable "aks_subnet_prefix" {
   description = "CIDR for the AKS subnet"
   type        = string
   default     = "10.0.0.0/22"
 }
 
-## AKS networking
+## AKS service CIDR
 variable "service_cidr" {
   description = "CIDR for AKS services"
   type        = string
   default     = "10.1.0.0/16"
 }
 
+## AKS DNS service IP
 variable "dns_service_ip" {
   description = "DNS IP inside the AKS service CIDR"
   type        = string
   default     = "10.1.0.10"
+}
+
+## Network Security Group name for AKS subnet
+variable "aks_subnet_nsg_name" {
+  description = "Network Security Group name for the AKS subnet"
+  type        = string
+  default     = "aks-engine-subnet-nsg"
 }
 
 ## AKS version & tier
