@@ -15,3 +15,16 @@ resource "azurerm_subnet" "aks" {
 
   depends_on = [azurerm_virtual_network.vnet]
 }
+
+## Azure Network Security Group for AKS Subnet
+resource "azurerm_network_security_group" "aks_nsg" {
+  name                = var.aks_subnet_nsg_name
+  location            = var.location
+  resource_group_name = var.resource_group_name
+}
+
+## Associate NSG to AKS Subnet
+resource "azurerm_subnet_network_security_group_association" "aks_subnet_nsg_assoc" {
+  subnet_id                 = azurerm_subnet.aks.id
+  network_security_group_id = azurerm_network_security_group.aks_nsg.id
+}

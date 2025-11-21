@@ -33,3 +33,9 @@ variable "aks_subnet_prefix" {
   description = "AKS subnet CIDR prefix"
   type        = string
 }
+
+## Network Security Group name for AKS subnet
+variable "aks_subnet_nsg_name" {
+  description = "NSG name for the AKS subnet"
+  type        = string
+}
