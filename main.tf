@@ -1,153 +1,46 @@
 
-# Homelab Resource Group
+## Resource Modules
+module "resources" {
+  source = "./modules/resources"
 
-resource "azurerm_resource_group" "homelab" {
-  name     = var.names.rg 
-  location = var.location
+  names         = var.names
+  location      = var.location
+  acr_sku       = var.acr_sku
+  key_vault_sku = var.key_vault_sku
 }
 
-# Homelab Networking
-resource "azurerm_virtual_network" "homelab_vnet" {
-  name                = var.names.vnet                        
-  location            = azurerm_resource_group.homelab.location
-  resource_group_name = azurerm_resource_group.homelab.name
-  address_space       = var.vnet_address_space                
+### Networking Module
+module "networking" {
+  source = "./modules/networking"
 
-  depends_on = [azurerm_resource_group.homelab]
+  location           = var.location
+  resource_group_name = module.resources.resource_group_name
+  vnet_name          = var.names.vnet
+  vnet_address_space = var.vnet_address_space
+  aks_subnet_name    = var.names.aks_subnet
+  aks_subnet_prefix  = var.aks_subnet_prefix
 }
+### Compute Module
+module "compute" {
+  source = "./modules/compute"
 
-resource "azurerm_subnet" "aks_subnet" {
-  name                 = var.names.aks_subnet                  
-  resource_group_name  = azurerm_resource_group.homelab.name
-  virtual_network_name = azurerm_virtual_network.homelab_vnet.name
-  address_prefixes     = [var.aks_subnet_prefix]             
+  location            = var.location
+  resource_group_name = module.resources.resource_group_name
 
-  depends_on = [azurerm_virtual_network.homelab_vnet]
-}
+  aks_name    = var.names.aks
+  dns_prefix  = var.names.dns_prefix
+  aks_sku_tier = var.aks_sku_tier
 
-
-# Homelab ACR
-resource "azurerm_container_registry" "acr" {
-  name                = var.names.acr 
-  location            = azurerm_resource_group.homelab.location
-  resource_group_name = azurerm_resource_group.homelab.name
-
-  sku           = var.acr_sku                                
-  admin_enabled = true
-
-  depends_on = [azurerm_resource_group.homelab]
-}
-
-#Used for Key Vault tenant_id
-data "azurerm_client_config" "current" {}
-
-#Homelab Key Vault
-resource "azurerm_key_vault" "kv" {
-  name                = var.names.kv
-  location            = azurerm_resource_group.homelab.location
-  resource_group_name = azurerm_resource_group.homelab.name
-
-  tenant_id = data.azurerm_client_config.current.tenant_id
-  sku_name  = var.key_vault_sku
-
-  soft_delete_retention_days   = 7
-  purge_protection_enabled     = false
-  public_network_access_enabled = true
-
-  rbac_authorization_enabled = true
-
-  depends_on = [azurerm_resource_group.homelab]
-}
-
-#Homelab AKS Cluster
-resource "azurerm_kubernetes_cluster" "aks" {
-  name                = var.names.aks
-  location            = azurerm_resource_group.homelab.location
-  resource_group_name = azurerm_resource_group.homelab.name
-
-  dns_prefix         = var.names.dns_prefix
   kubernetes_version = var.kubernetes_version
-  sku_tier           = var.aks_sku_tier
 
-  # System-assigned managed identity
-  identity {
-    type = "SystemAssigned"
-  }
+  subnet_id = module.networking.aks_subnet_id
 
-  # Local accounts + Kubernetes RBAC
-  role_based_access_control_enabled = true
-  local_account_disabled            = false
+  service_cidr   = var.service_cidr
+  dns_service_ip = var.dns_service_ip
 
-  # Workload identity
-  oidc_issuer_enabled      = true
-  workload_identity_enabled = true
+  system_node_pool = var.system_node_pool
+  user_node_pools  = var.user_node_pools
 
-  # Default/system node pool
-  default_node_pool {
-    name           = var.system_node_pool.name
-    vm_size        = var.system_node_pool.vm_size
-    type           = "VirtualMachineScaleSets"
-    vnet_subnet_id = azurerm_subnet.aks_subnet.id
-
-    auto_scaling_enabled = true
-    min_count            = var.system_node_pool.min_count
-    max_count            = var.system_node_pool.max_count
-  }
-
-  # Azure CNI, node subnet only
-  network_profile {
-    network_plugin    = "azure"
-    load_balancer_sku = "standard"
-
-    service_cidr   = var.service_cidr 
-    dns_service_ip = var.dns_service_ip 
-  }
-
-  # Ensure ACR is created first
-  depends_on = [
-    azurerm_container_registry.acr
-  ]
-}
-
-# User Node Pools
-resource "azurerm_kubernetes_cluster_node_pool" "usernp" {
-  for_each              = var.user_node_pools
-  name                  = each.key
-  kubernetes_cluster_id = azurerm_kubernetes_cluster.aks.id
-
-  vm_size        = each.value.vm_size
-  mode           = "User"
-  os_type        = "Linux"
-  vnet_subnet_id = azurerm_subnet.aks_subnet.id
-
-  auto_scaling_enabled = true
-  min_count            = each.value.min_count
-  max_count            = each.value.max_count
-
-  depends_on = [azurerm_kubernetes_cluster.aks]
-}
-
-
-# AKS -> ACR Role
-resource "azurerm_role_assignment" "aks_to_acr" {
-  scope                = azurerm_container_registry.acr.id
-  role_definition_name = "AcrPull"
-  principal_id         = azurerm_kubernetes_cluster.aks.kubelet_identity[0].object_id
-
-  depends_on = [
-    azurerm_kubernetes_cluster.aks,
-    azurerm_container_registry.acr
-  ]
-}
-
-# AKS -> Key Vault Role
-resource "azurerm_role_assignment" "aks_to_kv" {
-  scope                = azurerm_key_vault.kv.id
-  role_definition_name = "Key Vault Secrets User"
-  principal_id         = azurerm_kubernetes_cluster.aks.identity[0].principal_id
-
-  depends_on = [
-    azurerm_kubernetes_cluster.aks,
-    azurerm_key_vault.kv
-  ]
+  acr_id       = module.resources.acr_id
+  key_vault_id = module.resources.key_vault_id
 }

@@ -1,23 +1,23 @@
-## Global names (RG, AKS, ACR, VNet, Subnet, Key Vault)
+## Global names (RG, AKS, ACR, VNet, Subnet, Key Vault, DNS prefix)
 variable "names" {
   description = "Logical names for core resources"
   type = object({
     rg         = string
     aks        = string
     acr        = string
-    kv         = string
     vnet       = string
     aks_subnet = string
     dns_prefix = string
+    kv         = string
   })
   default = {
     rg         = "homelab-rg"
     aks        = "aks-engine-homelab"
     acr        = "gbenehomelabacr"
-    kv         = "gbenehomelab-kv"
     vnet       = "homelab-vnet"
     aks_subnet = "aks-engine-subnet"
     dns_prefix = "aks-engine-homelab"
+    kv         = "gbenehomelab-kv"
   }
 }
 
@@ -41,7 +41,7 @@ variable "aks_subnet_prefix" {
   default     = "10.0.0.0/22"
 }
 
-## AKS networking (must NOT overlap vnet_address_space)
+## AKS networking
 variable "service_cidr" {
   description = "CIDR for AKS services"
   type        = string
@@ -54,7 +54,7 @@ variable "dns_service_ip" {
   default     = "10.1.0.10"
 }
 
-## AKS version / tier
+## AKS version & tier
 variable "kubernetes_version" {
   type        = string
   description = "AKS Kubernetes version"
@@ -67,18 +67,18 @@ variable "aks_sku_tier" {
   default     = "Free"
 }
 
+## Azure Container Registry SKU
+variable "acr_sku" {
+  description = "SKU for the Azure Container Registry"
+  type        = string
+  default     = "Standard"
+}
+
 ## Key Vault SKU
 variable "key_vault_sku" {
   description = "SKU for Azure Key Vault"
   type        = string
   default     = "standard"
-}
-
-## ACR SKU
-variable "acr_sku" {
-  description = "SKU for the Azure Container Registry"
-  type        = string
-  default     = "Standard"
 }
 
 ## System node pool settings
@@ -98,7 +98,7 @@ variable "system_node_pool" {
   }
 }
 
-## User node pools
+## User node pool
 variable "user_node_pools" {
   description = "Map of user node pools"
   type = map(object({
@@ -110,8 +110,7 @@ variable "user_node_pools" {
     usernp = {
       vm_size   = "Standard_D2ps_v6"
       min_count = 1
-      max_count = 2
+      max_count = 3
     }
   }
 }
-

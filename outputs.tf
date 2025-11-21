@@ -1,30 +1,30 @@
-# AKS FQDN Output
+## Resource Group name
+output "resource_group_name" {
+  value       = module.resources.resource_group_name
+  description = "Name of the resource group"
+}
+
+## AKS Cluster FQDN
 output "aks_fqdn" {
-  value       = azurerm_kubernetes_cluster.aks.fqdn
+  value       = module.compute.aks_fqdn
   description = "AKS API server FQDN"
 }
 
-# Kubeconfig Output
+## AKS Kubeconfig
 output "aks_kube_config" {
-  value       = azurerm_kubernetes_cluster.aks.kube_config_raw
+  value       = module.compute.aks_kube_config
   sensitive   = true
   description = "Kubeconfig for the AKS cluster"
 }
 
-#ACR Name
+## Azure Container Registry Name
 output "acr_name" {
-  value       = azurerm_container_registry.acr.name
+  value       = module.resources.acr_name
   description = "Name of the Azure Container Registry"
 }
 
-#Key Vault Name
+## Azure Key Vault Name
 output "key_vault_name" {
-  value       = azurerm_key_vault.kv.name
+  value       = module.resources.key_vault_name
   description = "Name of the Azure Key Vault"
-}
-
-#Key Vault Resource ID
-output "key_vault_id" {
-  value       = azurerm_key_vault.kv.id
-  description = "Resource ID of the Azure Key Vault"
 }
