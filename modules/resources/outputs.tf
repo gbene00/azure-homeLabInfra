@@ -10,7 +10,7 @@ output "resource_group_id" {
   description = "Resource group ID"
 }
 
-## Azure Container Registry
+## Azure Container Registry ID
 output "acr_id" {
   value       = azurerm_container_registry.acr.id
   description = "ACR resource ID"
@@ -22,7 +22,7 @@ output "acr_name" {
   description = "ACR name"
 }
 
-## Azure Key Vault
+## Azure Key Vault ID
 output "key_vault_id" {
   value       = azurerm_key_vault.key_vault.id
   description = "Key Vault resource ID"
@@ -32,4 +32,16 @@ output "key_vault_id" {
 output "key_vault_name" {
   value       = azurerm_key_vault.key_vault.name
   description = "Key Vault name"
+}
+
+## Azure Storage Account ID
+output "storage_account_id" {
+  value       = azurerm_storage_account.storage.id
+  description = "Storage Account resource ID"
+}
+
+## Azure Storage Account Name
+output "storage_account_name" {
+  value       = azurerm_storage_account.storage.name
+  description = "Storage Account name"
 }

@@ -79,3 +79,8 @@ variable "key_vault_id" {
   description = "Key Vault resource ID"
   type        = string
 }
+
+variable "storage_account_id" {
+  description = "Storage Account resource ID"
+  type        = string
+}

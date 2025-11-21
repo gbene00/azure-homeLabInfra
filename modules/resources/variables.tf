@@ -5,6 +5,7 @@ variable "names" {
     rg  = string
     acr = string
     kv  = string
+    sa  = string
   })
 }
 

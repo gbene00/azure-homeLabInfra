@@ -9,6 +9,7 @@ variable "names" {
     aks_subnet = string
     dns_prefix = string
     kv         = string
+    sa         = string
   })
   default = {
     rg         = "homelab-rg"
@@ -18,6 +19,7 @@ variable "names" {
     aks_subnet = "aks-engine-subnet"
     dns_prefix = "aks-engine-homelab"
     kv         = "gbenehomelab-kv"
+    sa         = "homelabstorage100"
   }
 }
 

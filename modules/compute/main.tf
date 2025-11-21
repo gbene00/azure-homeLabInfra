@@ -83,3 +83,14 @@ resource "azurerm_role_assignment" "aks_to_kv" {
     azurerm_kubernetes_cluster.aks
   ]
 }
+
+# AKS -> Storage Account Role integration
+resource "azurerm_role_assignment" "aks_to_storage" {
+  scope                = var.storage_account_id
+  role_definition_name = "Storage Blob Data Contributor"
+  principal_id         = azurerm_kubernetes_cluster.aks.identity[0].principal_id
+
+  depends_on = [
+    azurerm_kubernetes_cluster.aks
+  ]
+}
