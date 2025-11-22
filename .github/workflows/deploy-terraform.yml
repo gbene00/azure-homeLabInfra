@@ -1,5 +1,5 @@
 #Terraform workflow
-name: "Terraform"
+name: "Terraform Deploy"
 
 on:
 #  push:
@@ -19,7 +19,7 @@ env:
   TOKEN_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
   TENANT_ID: ${{ secrets.TENANT_ID }}
   SUBSCRIPTION_ID: ${{ secrets.SUBSCRIPTION_ID }}
-  ROOT_PATH: '${{ github.workspace }}/environments'
+  ROOT_PATH: '${{ github.workspace }}'
 
 jobs:
   terraform_plan:
