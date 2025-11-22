@@ -1,0 +1,121 @@
+#Terraform workflow
+name: "Terraform"
+
+on:
+#  push:
+#    branches: [ "main" ]
+#    paths:
+#      - "environments/**"
+#      - ".github/workflows/terraform.yml"
+#  pull_request:
+#    branches: [ "main" ]
+#    paths:
+#      - "environments/**"
+#      - ".github/workflows/terraform.yml"
+  workflow_dispatch:
+
+env: 
+  ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+  ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+  ARM_TENANT_ID: ${{ secrets.TENANT_ID }}
+  ARM_SUBSCRIPTION_ID: ${{ secrets.SUBSCRIPTION_ID }}
+  ROOT_PATH: '${{ github.workspace }}/environments'
+
+jobs:
+  terraform_plan:
+    name: 'Terraform plan'
+    runs-on: ubuntu-latest
+    
+    # Expose the plan exit code as a job output
+    outputs:
+      plan_exitcode: ${{ steps.plan.outputs.exitcode }}
+
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+    # Checkout the repository to the GitHub Actions runner
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    # Install the latest version of Terraform CLI and configure the Terraform CLI configuration file with a Terraform Cloud user API token
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+    # Initialize a new or existing  Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
+    - name: Terraform Init
+      run: terraform init
+      working-directory: ${{ env.ROOT_PATH }}
+
+    # Checks that all Terraform configuration files adhere to a canonical format
+    - name: Terraform Format
+      run: terraform fmt -recursive
+      working-directory: ${{ env.ROOT_PATH }}
+
+    ## Generates an execution plan for Terraform 
+    - name: Terraform Plan
+      run: |
+        set +e
+        terraform plan -detailed-exitcode -input=false
+        exitcode=$?
+        set -e
+
+        # Exit codes:
+        # 0 = Succeeded, no changes
+        # 2 = Succeeded, changes present
+        # 1 = Error
+        if [ "$exitcode" -eq 0 ]; then
+          echo "No changes."
+          echo "exitcode=0" >> "$GITHUB_OUTPUT"
+        elif [ "$exitcode" -eq 2 ]; then
+          echo "Changes detected."
+          echo "exitcode=2" >> "$GITHUB_OUTPUT"
+        else
+          echo "Terraform plan failed with exit code $exitcode"
+          exit $exitcode
+        fi
+      working-directory: ${{ env.ROOT_PATH }}
+
+  terraform_apply:
+    name: 'Terraform apply'
+    runs-on: ubuntu-latest
+    needs: terraform_plan
+    environment: production
+
+    # Only run apply if plan detected changes (exit code 2)
+    if: needs.terraform_plan.outputs.plan_exitcode == '2'
+
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+    # Checkout the repository to the GitHub Actions runner
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    # Install the latest version of Terraform CLI and configure the Terraform CLI configuration file with a Terraform Cloud user API token
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+    # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
+    - name: Terraform Init
+      run: terraform init
+      working-directory: ${{ env.ROOT_PATH }}
+
+    # Checks that all Terraform configuration files adhere to a canonical format
+    - name: Terraform Format
+      run: terraform fmt -recursive
+      working-directory: ${{ env.ROOT_PATH }}
+
+    ## Generates an execution plan for Terraform 
+    - name: Terraform Apply
+      run: terraform apply --auto-approve
+      working-directory: ${{ env.ROOT_PATH }}
