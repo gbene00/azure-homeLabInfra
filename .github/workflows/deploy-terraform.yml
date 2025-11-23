@@ -63,8 +63,8 @@ jobs:
       run: |
         # Run plan, capture ALL output into a file
         set +e
-        terraform plan -input=false -no-color > plan.txt
-        tf_exit=$?
+        terraform plan -input=false -no-color | tee plan.txt
+        tf_exit=${PIPESTATUS[0]}
         set -e
 
         echo "Terraform CLI exit code: $tf_exit"
