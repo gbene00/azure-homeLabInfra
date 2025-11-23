@@ -65,6 +65,8 @@ jobs:
         exitcode=$?
         set -e
 
+        echo "Terraform plan exit code: $exitcode"
+
         # Exit codes:
         # 0 = Succeeded, no changes
         # 2 = Succeeded, changes present
