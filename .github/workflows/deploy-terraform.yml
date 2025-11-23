@@ -1,17 +1,15 @@
 #Terraform Deploy Workflow
-name: "Terraform Deploy Workflow"
+name: "Terraform Deploy"
 
 on:
 #  push:
-#    branches: [ "main" ]
-#    paths:
-#      - "environments/**"
-#      - ".github/workflows/terraform.yml"
+#    branches: 
+#      - main
+#      - 'feature/*'
 #  pull_request:
-#    branches: [ "main" ]
-#    paths:
-#      - "environments/**"
-#      - ".github/workflows/terraform.yml"
+#    branches:
+#      - main
+#      - 'feature/*'
   workflow_dispatch:
 
 env: 

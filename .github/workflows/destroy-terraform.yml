@@ -3,9 +3,13 @@ name: "Terraform Destroy Workflow"
 
 on:
 #  push:
-#    branches: [ "main" ]
+#    branches: 
+#      - main
+#      - 'feature/*'
 #  pull_request:
-#    branches: [ "feature/*" ]
+#    branches:
+#      - main
+#      - 'feature/*'
   workflow_dispatch:
 
 env: 
