@@ -1,12 +1,12 @@
+#Terraform Destroy Workflow
 name: "Terraform Destroy Workflow"
 
 on:
+#  push:
+#    branches: [ "main" ]
+#  pull_request:
+#    branches: [ "feature/*" ]
   workflow_dispatch:
-    inputs:
-      confirm_destroy:
-        description: 'Type "DESTROY" to confirm.
-        required: true
-        type: string
 
 env: 
   ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
