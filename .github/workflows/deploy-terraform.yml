@@ -58,6 +58,7 @@ jobs:
 
     ## Generates an execution plan for Terraform 
     - name: Terraform Plan
+      id: plan
       run: |
         set +e
         terraform plan -detailed-exitcode -input=false
