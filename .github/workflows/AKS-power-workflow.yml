@@ -1,0 +1,75 @@
+name: AKS Start/Stop
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "What do you want to do with the AKS cluster?"
+        required: true
+        default: "stop"
+        type: choice
+        options:
+          - start
+          - stop
+
+env:
+  # Azure auth (reuse existing secrets)
+  ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+  ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+  ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+  ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+
+  
+  AKS_RESOURCE_GROUP: homelab-rg
+  AKS_CLUSTER_NAME: aks-engine-homelab
+
+jobs:
+  aks-power:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout (optional)
+        uses: actions/checkout@v4
+
+      - name: Azure CLI login using ARM_* env
+        run: |
+          echo "Logging into Azure with service principal..."
+          az login --service-principal \
+            --username "$ARM_CLIENT_ID" \
+            --password "$ARM_CLIENT_SECRET" \
+            --tenant "$ARM_TENANT_ID"
+
+          echo "Setting subscription..."
+          az account set --subscription "$ARM_SUBSCRIPTION_ID"
+
+          echo "Current account:"
+          az account show
+
+      - name: Start or stop AKS cluster
+        run: |
+          ACTION="${{ github.event.inputs.action }}"
+          echo "Requested action: $ACTION"
+          echo "Cluster: ${AKS_RESOURCE_GROUP}/${AKS_CLUSTER_NAME}"
+
+          if [ "$ACTION" = "stop" ]; then
+            echo "Stopping AKS cluster..."
+            az aks stop \
+              --resource-group "${AKS_RESOURCE_GROUP}" \
+              --name "${AKS_CLUSTER_NAME}"
+
+          elif [ "$ACTION" = "start" ]; then
+            echo "Starting AKS cluster..."
+            az aks start \
+              --resource-group "${AKS_RESOURCE_GROUP}" \
+              --name "${AKS_CLUSTER_NAME}"
+
+          else
+            echo "Unknown action: $ACTION"
+            exit 1
+          fi
+
+          echo "Action '$ACTION' completed."

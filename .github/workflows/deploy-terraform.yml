@@ -1,5 +1,5 @@
 #Terraform Deploy Workflow
-name: "Terraform Deploy"
+name: "Terraform Deploy Workflow"
 
 on:
 #  push:
