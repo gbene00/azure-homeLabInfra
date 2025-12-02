@@ -1,9 +1,9 @@
-# H1  **Azure Home Lab Infrastructure**
+#  **Azure Home Lab Infrastructure**
 
 This repository contains the infrastructure-as-code for my Azure-based personal homelab, built using Terraform.
 The goal is to create a realistic, cloud-hosted environment where I can explore modern infrastructure patterns, platform engineering concepts, and automation workflows—while having the flexibility to grow the environment as my skills evolve.
 
-**Objectives**
+##  **Objectives**
 
 This homelab helps me:
 
@@ -17,7 +17,7 @@ This homelab helps me:
 
 Although this is a personal learning project, the repository structure intentionally resembles professional IaC project patterns, making it suitable for reuse in real-world scenarios.
 
-## H2  **What This Repository Does**
+##  **What This Repository Does**
 
 At a high level, this repository defines the infrastructure layer of the homelab, fully hosted in Microsoft Azure.
 
@@ -29,7 +29,7 @@ Terraform in this repo is responsible for:
       - Application or cluster layers in other repositories
       - Future modules (AKS, VM workloads, shared services)
   
-## H2  **Repository Structure**
+##  **Repository Structure**
 
 The repository separates root configuration, reusable modules, and automation:
 
@@ -58,7 +58,7 @@ Root Terraform Files
       - Networking information
       - Values needed by upper layers
 
-## H2  **Modules**
+##  **Modules**
 
 modules/ contains reusable, self-contained Terraform modules.
 Each module represents a logical building block, for example:
@@ -71,7 +71,7 @@ Each module is designed to be:
       - Reusable across environments
       - Extensible as the homelab expands
 
-## H2  **Automation**
+##  **Automation**
 
 _.github/workflows/_
 Contains GitHub Actions workflows used to:
