@@ -9,6 +9,11 @@ resource "azurerm_kubernetes_cluster" "aks" {
   kubernetes_version = var.kubernetes_version
   sku_tier           = var.aks_sku_tier
 
+   key_vault_secrets_provider {
+    secret_rotation_enabled  = true
+    secret_rotation_interval = "2m"
+  }
+
   ## System-assigned managed identity
   identity {
     type = "SystemAssigned"
