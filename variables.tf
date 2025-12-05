@@ -58,13 +58,6 @@ variable "dns_service_ip" {
   default     = "10.1.0.10"
 }
 
-## Network Security Group name for AKS subnet
-variable "aks_subnet_nsg_name" {
-  description = "Network Security Group name for the AKS subnet"
-  type        = string
-  default     = "aks-engine-subnet-nsg"
-}
-
 ## AKS version & tier
 variable "kubernetes_version" {
   type        = string
