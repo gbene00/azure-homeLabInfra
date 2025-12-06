@@ -26,7 +26,6 @@ env:
   AKS_RESOURCE_GROUP: homelab-rg
   AKS_CLUSTER_NAME: aks-engine-homelab
 
-  # Use workflow input when manually dispatched; default to "stop" for schedule
   AKS_ACTION: ${{ github.event.inputs.action || 'stop' }}
 
 jobs:
@@ -51,6 +50,9 @@ jobs:
 
           echo "Setting subscription..."
           az account set --subscription "$ARM_SUBSCRIPTION_ID"
+
+          echo "Current account:"
+          az account show
 
           echo "Current account:"
           az account show
