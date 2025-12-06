@@ -12,6 +12,7 @@ on:
           - start
           - stop
 
+  # GitHub cron uses UTC. 19:00 Europe/Bucharest ≈ 17:00 UTC.
   schedule:
     - cron: "0 17 * * *"
 
@@ -25,7 +26,6 @@ env:
   AKS_RESOURCE_GROUP: homelab-rg
   AKS_CLUSTER_NAME: aks-engine-homelab
 
-  # Use workflow input when manually dispatched; default to "stop" for schedule
   AKS_ACTION: ${{ github.event.inputs.action || 'stop' }}
 
 jobs:
@@ -47,6 +47,9 @@ jobs:
           tenant-id: ${{ env.ARM_TENANT_ID }}
           subscription-id: ${{ env.ARM_SUBSCRIPTION_ID }}
           client-secret: ${{ env.ARM_CLIENT_SECRET }}
+
+          echo "Current account:"
+          az account show
 
       - name: Get AKS power state
         id: aks_state
