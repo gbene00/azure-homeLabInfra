@@ -40,16 +40,13 @@ jobs:
       - name: Checkout (optional)
         uses: actions/checkout@v4
 
-      - name: Azure CLI login using ARM_* env
-        run: |
-          echo "Logging into Azure with service principal..."
-          az login --service-principal \
-            --username "$ARM_CLIENT_ID" \
-            --password "$ARM_CLIENT_SECRET" \
-            --tenant "$ARM_TENANT_ID"
-
-          echo "Setting subscription..."
-          az account set --subscription "$ARM_SUBSCRIPTION_ID"
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ env.ARM_CLIENT_ID }}
+          tenant-id: ${{ env.ARM_TENANT_ID }}
+          subscription-id: ${{ env.ARM_SUBSCRIPTION_ID }}
+          client-secret: ${{ env.ARM_CLIENT_SECRET }}
 
           echo "Current account:"
           az account show
