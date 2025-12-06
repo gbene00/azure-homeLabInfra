@@ -12,16 +12,21 @@ on:
           - start
           - stop
 
+  schedule:
+    - cron: "0 17 * * *"
+
 env:
-  # Azure auth (reuse existing secrets)
+  # Azure authentication
   ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
   ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
   ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
   ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
 
-  
   AKS_RESOURCE_GROUP: homelab-rg
   AKS_CLUSTER_NAME: aks-engine-homelab
+
+  # Use workflow input when manually dispatched; default to "stop" for schedule
+  AKS_ACTION: ${{ github.event.inputs.action || 'stop' }}
 
 jobs:
   aks-power:
@@ -35,41 +40,42 @@ jobs:
       - name: Checkout (optional)
         uses: actions/checkout@v4
 
-      - name: Azure CLI login using ARM_* env
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ env.ARM_CLIENT_ID }}
+          tenant-id: ${{ env.ARM_TENANT_ID }}
+          subscription-id: ${{ env.ARM_SUBSCRIPTION_ID }}
+          client-secret: ${{ env.ARM_CLIENT_SECRET }}
+
+      - name: Get AKS power state
+        id: aks_state
         run: |
-          echo "Logging into Azure with service principal..."
-          az login --service-principal \
-            --username "$ARM_CLIENT_ID" \
-            --password "$ARM_CLIENT_SECRET" \
-            --tenant "$ARM_TENANT_ID"
+          echo "Reading AKS power state for ${AKS_RESOURCE_GROUP}/${AKS_CLUSTER_NAME}..."
+          STATE=$(az aks show \
+            --resource-group "${AKS_RESOURCE_GROUP}" \
+            --name "${AKS_CLUSTER_NAME}" \
+            --query "powerState.code" -o tsv)
 
-          echo "Setting subscription..."
-          az account set --subscription "$ARM_SUBSCRIPTION_ID"
+          echo "Current power state: $STATE"
+          echo "state=$STATE" >> "$GITHUB_OUTPUT"
 
-          echo "Current account:"
-          az account show
-
-      - name: Start or stop AKS cluster
+      - name: Stop AKS cluster if running
+        if: env.AKS_ACTION == 'stop' && steps.aks_state.outputs.state == 'Running'
         run: |
-          ACTION="${{ github.event.inputs.action }}"
-          echo "Requested action: $ACTION"
-          echo "Cluster: ${AKS_RESOURCE_GROUP}/${AKS_CLUSTER_NAME}"
+          echo "Requested action: stop"
+          echo "Cluster is currently Running - stopping..."
+          az aks stop \
+            --resource-group "${AKS_RESOURCE_GROUP}" \
+            --name "${AKS_CLUSTER_NAME}"
+          echo "Cluster stop request submitted."
 
-          if [ "$ACTION" = "stop" ]; then
-            echo "Stopping AKS cluster..."
-            az aks stop \
-              --resource-group "${AKS_RESOURCE_GROUP}" \
-              --name "${AKS_CLUSTER_NAME}"
-
-          elif [ "$ACTION" = "start" ]; then
-            echo "Starting AKS cluster..."
-            az aks start \
-              --resource-group "${AKS_RESOURCE_GROUP}" \
-              --name "${AKS_CLUSTER_NAME}"
-
-          else
-            echo "Unknown action: $ACTION"
-            exit 1
-          fi
-
-          echo "Action '$ACTION' completed."
+      - name: Start AKS cluster
+        if: env.AKS_ACTION == 'start'
+        run: |
+          echo "Requested action: start"
+          echo "Starting AKS cluster..."
+          az aks start \
+            --resource-group "${AKS_RESOURCE_GROUP}" \
+            --name "${AKS_CLUSTER_NAME}"
+          echo "Cluster start request submitted."
