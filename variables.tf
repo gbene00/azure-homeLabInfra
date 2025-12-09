@@ -118,3 +118,18 @@ variable "user_node_pools" {
     }
   }
 }
+
+## Storage Container Names
+variable "storage_containers" {
+  description = "Blob containers for backups and database dumps"
+  type = object({
+    velero   = string
+    pg_dumps = string
+  })
+
+  default = {
+    velero   = "velero-backups"
+    pg_dumps = "pgsql-dumps"
+  }
+}
+

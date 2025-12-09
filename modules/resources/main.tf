@@ -52,14 +52,14 @@ resource "azurerm_storage_account" "storage" {
 
 ## Blob Container for Velero Backups
 resource "azurerm_storage_container" "velero" {
-  name                  = "velero-backups"
+  name                  = var.storage_containers.velero
   storage_account_id  = azurerm_storage_account.storage.id
   container_access_type = "private"
 }
 
 ## Blob Container for PostgreSQL Dumps
 resource "azurerm_storage_container" "pg_dumps" {
-  name                  = "pgsql-dumps"
+  name                  = var.storage_containers.pg_dumps
   storage_account_id  = azurerm_storage_account.storage.id
   container_access_type = "private"
 }
