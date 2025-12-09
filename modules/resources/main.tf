@@ -49,3 +49,17 @@ resource "azurerm_storage_account" "storage" {
 
   depends_on = [azurerm_resource_group.rg]
 }
+
+## Blob Container for Velero Backups
+resource "azurerm_storage_container" "velero" {
+  name                  = "velero-backups"
+  storage_account_id  = azurerm_storage_account.storage.id
+  container_access_type = "private"
+}
+
+## Blob Container for PostgreSQL Dumps
+resource "azurerm_storage_container" "pg_dumps" {
+  name                  = "pgsql-dumps"
+  storage_account_id  = azurerm_storage_account.storage.id
+  container_access_type = "private"
+}
