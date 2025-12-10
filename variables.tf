@@ -113,7 +113,7 @@ variable "user_node_pools" {
   default = {
     usernp = {
       vm_size   = "Standard_D2ps_v6"
-      min_count = 1
+      min_count = 2
       max_count = 3
     }
   }
