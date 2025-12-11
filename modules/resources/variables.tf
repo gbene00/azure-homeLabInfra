@@ -26,3 +26,12 @@ variable "key_vault_sku" {
   description = "Key Vault SKU"
   type        = string
 }
+
+## Storage Container Names
+variable "storage_containers" {
+  description = "Storage containers used for velero and DB dumps"
+  type = object({
+    velero   = string
+    pg_dumps = string
+  })
+}
