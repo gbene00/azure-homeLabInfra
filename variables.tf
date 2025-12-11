@@ -98,7 +98,7 @@ variable "system_node_pool" {
     name      = "systemnp"
     vm_size   = "Standard_D2ps_v6"
     min_count = 1
-    max_count = 2
+    max_count = 3
   }
 }
 
@@ -113,7 +113,7 @@ variable "user_node_pools" {
   default = {
     usernp = {
       vm_size   = "Standard_D2ps_v6"
-      min_count = 2
+      min_count = 1
       max_count = 3
     }
   }
