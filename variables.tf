@@ -60,9 +60,30 @@ variable "dns_service_ip" {
 
 ## AKS version & tier
 variable "kubernetes_version" {
+  description = "AKS Kubernetes version for automatic upgrades"
   type        = string
-  description = "AKS Kubernetes version"
-  default     = "1.33.3"
+  default     = null
+}
+
+## AKS automatic upgrade settings
+variable "automatic_upgrade_channel" {
+  description = "Automatic upgrade channel for AKS"
+  type        = string
+  default     = "stable"
+}
+
+## AKS node OS upgrade channel
+variable "node_os_upgrade_channel" {
+  description = "Channel for automatic node OS image upgrades (None, NodeImage, SecurityPatch)"
+  type        = string
+  default     = "SecurityPatch"
+}
+
+## Max surge for AKS node pool upgrades
+variable "node_pool_max_surge" {
+  description = "Max surge value during AKS node pool upgrades (percentage or absolute number)"
+  type        = string
+  default     = "33%"
 }
 
 variable "aks_sku_tier" {

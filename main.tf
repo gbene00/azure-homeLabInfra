@@ -26,18 +26,21 @@ module "networking" {
 module "compute" {
   source = "./modules/compute"
 
-  location            = var.location
-  resource_group_name = module.resources.resource_group_name
-  aks_name            = var.names.aks
-  dns_prefix          = var.names.dns_prefix
-  aks_sku_tier        = var.aks_sku_tier
-  kubernetes_version  = var.kubernetes_version
-  subnet_id           = module.networking.aks_subnet_id
-  service_cidr        = var.service_cidr
-  dns_service_ip      = var.dns_service_ip
-  system_node_pool    = var.system_node_pool
-  user_node_pools     = var.user_node_pools
-  acr_id              = module.resources.acr_id
-  key_vault_id        = module.resources.key_vault_id
-  storage_account_id  = module.resources.storage_account_id
+  location                  = var.location
+  resource_group_name       = module.resources.resource_group_name
+  aks_name                  = var.names.aks
+  dns_prefix                = var.names.dns_prefix
+  aks_sku_tier              = var.aks_sku_tier
+  kubernetes_version        = var.kubernetes_version
+  automatic_upgrade_channel = var.automatic_upgrade_channel
+  node_os_upgrade_channel   = var.node_os_upgrade_channel
+  node_pool_max_surge       = var.node_pool_max_surge
+  subnet_id                 = module.networking.aks_subnet_id
+  service_cidr              = var.service_cidr
+  dns_service_ip            = var.dns_service_ip
+  system_node_pool          = var.system_node_pool
+  user_node_pools           = var.user_node_pools
+  acr_id                    = module.resources.acr_id
+  key_vault_id              = module.resources.key_vault_id
+  storage_account_id        = module.resources.storage_account_id
 }

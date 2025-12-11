@@ -46,11 +46,13 @@ variable "service_cidr" {
   type        = string
 }
 
+## Azure AKS DNS service IP
 variable "dns_service_ip" {
   description = "DNS IP for AKS services"
   type        = string
 }
 
+## AKS System Node Pool Config
 variable "system_node_pool" {
   description = "Config for the system node pool"
   type = object({
@@ -61,6 +63,7 @@ variable "system_node_pool" {
   })
 }
 
+## AKS User Node Pools Config
 variable "user_node_pools" {
   description = "Map of user node pools"
   type = map(object({
@@ -82,5 +85,20 @@ variable "key_vault_id" {
 
 variable "storage_account_id" {
   description = "Storage Account resource ID"
+  type        = string
+}
+
+variable "automatic_upgrade_channel" {
+  description = "Automatic upgrade channel for the AKS control plane and node pools"
+  type        = string
+}
+
+variable "node_os_upgrade_channel" {
+  description = "Automatic node OS image upgrade channel"
+  type        = string
+}
+
+variable "node_pool_max_surge" {
+  description = "Max surge value used during node pool upgrades"
   type        = string
 }

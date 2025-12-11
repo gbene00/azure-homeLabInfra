@@ -9,6 +9,9 @@ resource "azurerm_kubernetes_cluster" "aks" {
   kubernetes_version = var.kubernetes_version
   sku_tier           = var.aks_sku_tier
 
+  automatic_upgrade_channel = var.automatic_upgrade_channel
+  node_os_upgrade_channel   = var.node_os_upgrade_channel
+
    key_vault_secrets_provider {
     secret_rotation_enabled  = true
     secret_rotation_interval = "2m"
@@ -37,6 +40,10 @@ resource "azurerm_kubernetes_cluster" "aks" {
     auto_scaling_enabled = true
     min_count            = var.system_node_pool.min_count
     max_count            = var.system_node_pool.max_count
+
+    upgrade_settings {
+      max_surge = var.node_pool_max_surge
+    }
   }
 
   ## Azure CNI, network profile
