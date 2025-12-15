@@ -40,7 +40,6 @@ resource "azurerm_kubernetes_cluster" "aks" {
     auto_scaling_enabled = true
     min_count            = var.system_node_pool.min_count
     max_count            = var.system_node_pool.max_count
-    node_count           = var.system_node_pool.min_count
 
     upgrade_settings {
       max_surge = var.node_pool_max_surge
@@ -71,7 +70,6 @@ resource "azurerm_kubernetes_cluster_node_pool" "usernp" {
   auto_scaling_enabled = true
   min_count            = each.value.min_count
   max_count            = each.value.max_count
-  node_count           = each.value.min_count
 
   depends_on = [azurerm_kubernetes_cluster.aks]
 }
