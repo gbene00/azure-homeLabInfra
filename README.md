@@ -34,49 +34,52 @@ Terraform in this repo is responsible for:
 The repository separates root configuration, reusable modules, and automation:
 
 Root Terraform Files
- - _main.tf_
+ - `_main.tf_`
    Entry point of the Terraform configuration, responsible for:
       - Calling modules from the modules/ directory
       - Declaring any standalone resources
       - Referencing variables and exposing outputs
 
- - _variables.tf_
+ - `_variables.tf_`
    Central configuration for input variables such as:
       - Azure region
       - Naming conventions / prefixes
       - Environment type (dev, lab, playground)
       - Feature flags for optional components
 
- - _providers.tf_
+ - `_providers.tf_`
    Configures Terraform providers, primarily:
       - azurerm for Azure
       - Optional providers
 
- - _outputs.tf_
+ - `_outputs.tf_`
    Exposes key values after terraform apply, such as:
       - Resource group IDs
       - Networking information
       - Values needed by upper layers
 
-##  **Modules**
+## **Modules**
 
-modules/ contains reusable, self-contained Terraform modules.
+`modules/` contains reusable, self-contained Terraform modules.
+
 - Each module represents a logical building block, for example:
-      - Core networking (vNET + subnets)
-      - Shared services (Key Vault, Log Analytics)
-      - Compute layers (AKS, VM workloads, jump host)
+
+  - Core networking (vNET + subnets)
+  - Shared services (Key Vault, Log Analytics)
+  - Compute layers (AKS, VM workloads, jump host)
 
 - Each module is designed to be:
-      - Independently developed and tested
-      - Reusable across environments
-      - Extensible as the homelab expands
 
-##  **Automation**
+  - Independently developed and tested
+  - Reusable across environments
+  - Extensible as the homelab expands
 
-_.github/workflows/_
+## **Automation**
+
+`.github/workflows/`
+
 - Contains GitHub Actions workflows used to:
-      - Execute plan/apply pipelines for IaC changes
-      - Enforce infrastructure CI/CD best practices
-      - Stop and start resources for a better control and cost efficiency
 
-
+  - Execute plan/apply pipelines for IaC changes
+  - Enforce infrastructure CI/CD best practices
+  - Stop and start resources for better control and cost efficiency
