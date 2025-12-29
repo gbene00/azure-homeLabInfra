@@ -61,12 +61,12 @@ Root Terraform Files
 ##  **Modules**
 
 modules/ contains reusable, self-contained Terraform modules.
-Each module represents a logical building block, for example:
+- Each module represents a logical building block, for example:
       - Core networking (vNET + subnets)
       - Shared services (Key Vault, Log Analytics)
       - Compute layers (AKS, VM workloads, jump host)
 
-Each module is designed to be:
+- Each module is designed to be:
       - Independently developed and tested
       - Reusable across environments
       - Extensible as the homelab expands
@@ -74,7 +74,7 @@ Each module is designed to be:
 ##  **Automation**
 
 _.github/workflows/_
-Contains GitHub Actions workflows used to:
+- Contains GitHub Actions workflows used to:
       - Execute plan/apply pipelines for IaC changes
       - Enforce infrastructure CI/CD best practices
       - Stop and start resources for a better control and cost efficiency
