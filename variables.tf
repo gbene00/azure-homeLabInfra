@@ -135,7 +135,7 @@ variable "system_extra_pool" {
   default = {
     name      = "syspool"
     vm_size   = "Standard_D4ps_v6"
-    min_count = 2
+    min_count = 1
     max_count = 3
     max_pods  = 70
   }
