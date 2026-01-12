@@ -1,4 +1,3 @@
-
 ## Azure Kubernetes Service Cluster
 resource "azurerm_kubernetes_cluster" "aks" {
   name                = var.aks_name
@@ -12,7 +11,7 @@ resource "azurerm_kubernetes_cluster" "aks" {
   automatic_upgrade_channel = var.automatic_upgrade_channel
   node_os_upgrade_channel   = var.node_os_upgrade_channel
 
-   key_vault_secrets_provider {
+  key_vault_secrets_provider {
     secret_rotation_enabled  = true
     secret_rotation_interval = "2m"
   }
@@ -27,10 +26,10 @@ resource "azurerm_kubernetes_cluster" "aks" {
   local_account_disabled            = false
 
   ## Workload identity
-  oidc_issuer_enabled      = true
+  oidc_issuer_enabled        = true
   workload_identity_enabled = true
 
-  ## AKS system node pool
+  ## Default AKS system node pool (MUST exist)
   default_node_pool {
     name           = var.system_node_pool.name
     vm_size        = var.system_node_pool.vm_size
@@ -46,8 +45,18 @@ resource "azurerm_kubernetes_cluster" "aks" {
     }
   }
 
-  ## Azure extra system node pool
-  resource "azurerm_kubernetes_cluster_node_pool" "syspool" {
+  ## Azure CNI, network profile
+  network_profile {
+    network_plugin    = "azure"
+    load_balancer_sku = "standard"
+
+    service_cidr   = var.service_cidr
+    dns_service_ip = var.dns_service_ip
+  }
+}
+
+## Additional System Node Pool
+resource "azurerm_kubernetes_cluster_node_pool" "syspool" {
   name                  = var.system_extra_pool.name
   kubernetes_cluster_id = azurerm_kubernetes_cluster.aks.id
 
@@ -65,17 +74,7 @@ resource "azurerm_kubernetes_cluster" "aks" {
   depends_on = [azurerm_kubernetes_cluster.aks]
 }
 
-  ## Azure CNI, network profile
-  network_profile {
-    network_plugin    = "azure"
-    load_balancer_sku = "standard"
-
-    service_cidr   = var.service_cidr
-    dns_service_ip = var.dns_service_ip
-  }
-}
-
-## AKS User Node Pool
+## AKS User Node Pool (unchanged)
 resource "azurerm_kubernetes_cluster_node_pool" "usernp" {
   for_each              = var.user_node_pools
   name                  = each.key
@@ -99,9 +98,7 @@ resource "azurerm_role_assignment" "aks_to_acr" {
   role_definition_name = "AcrPull"
   principal_id         = azurerm_kubernetes_cluster.aks.kubelet_identity[0].object_id
 
-  depends_on = [
-    azurerm_kubernetes_cluster.aks
-  ]
+  depends_on = [azurerm_kubernetes_cluster.aks]
 }
 
 # AKS -> Key Vault Role integration
@@ -110,9 +107,7 @@ resource "azurerm_role_assignment" "aks_to_kv" {
   role_definition_name = "Key Vault Secrets User"
   principal_id         = azurerm_kubernetes_cluster.aks.identity[0].principal_id
 
-  depends_on = [
-    azurerm_kubernetes_cluster.aks
-  ]
+  depends_on = [azurerm_kubernetes_cluster.aks]
 }
 
 # AKS -> Storage Account Role integration
@@ -121,7 +116,5 @@ resource "azurerm_role_assignment" "aks_to_storage" {
   role_definition_name = "Storage Blob Data Contributor"
   principal_id         = azurerm_kubernetes_cluster.aks.identity[0].principal_id
 
-  depends_on = [
-    azurerm_kubernetes_cluster.aks
-  ]
+  depends_on = [azurerm_kubernetes_cluster.aks]
 }

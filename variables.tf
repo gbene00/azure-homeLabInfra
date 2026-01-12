@@ -123,6 +123,24 @@ variable "system_node_pool" {
   }
 }
 
+variable "system_extra_pool" {
+  description = "Additional system node pool"
+  type = object({
+    name      = string
+    vm_size   = string
+    min_count = number
+    max_count = number
+    max_pods  = number
+  })
+  default = {
+    name      = "syspool"
+    vm_size   = "Standard_D4ps_v6"
+    min_count = 2
+    max_count = 3
+    max_pods  = 70
+  }
+}
+
 ## User node pool
 variable "user_node_pools" {
   description = "Map of user node pools"
