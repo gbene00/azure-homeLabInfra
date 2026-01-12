@@ -63,6 +63,16 @@ variable "system_node_pool" {
   })
 }
 
+variable "system_extra_pool" {
+  type = object({
+    name      = string
+    vm_size   = string
+    min_count = number
+    max_count = number
+    max_pods  = number
+  })
+}
+
 ## AKS User Node Pools Config
 variable "user_node_pools" {
   description = "Map of user node pools"

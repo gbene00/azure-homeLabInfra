@@ -43,4 +43,5 @@ module "compute" {
   acr_id                    = module.resources.acr_id
   key_vault_id              = module.resources.key_vault_id
   storage_account_id        = module.resources.storage_account_id
+  system_extra_pool         = var.system_extra_pool
 }
