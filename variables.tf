@@ -118,8 +118,8 @@ variable "system_node_pool" {
   default = {
     name      = "systemnp"
     vm_size   = "Standard_D2ps_v6"
-    min_count = 2
-    max_count = 3
+    min_count = 1
+    max_count = 1
   }
 }
 
