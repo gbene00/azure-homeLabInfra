@@ -149,14 +149,8 @@ variable "user_node_pools" {
     min_count = number
     max_count = number
   }))
-  default = {
-    usernp = {
-      vm_size   = "Standard_D2ps_v6"
-      min_count = 1
-      max_count = 3
-    }
+  default = {}
   }
-}
 
 ## Storage Container Names
 variable "storage_containers" {
