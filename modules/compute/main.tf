@@ -46,6 +46,25 @@ resource "azurerm_kubernetes_cluster" "aks" {
     }
   }
 
+  ## Azure extra system node pool
+  resource "azurerm_kubernetes_cluster_node_pool" "syspool" {
+  name                  = var.system_extra_pool.name
+  kubernetes_cluster_id = azurerm_kubernetes_cluster.aks.id
+
+  mode           = "System"
+  vm_size        = var.system_extra_pool.vm_size
+  os_type        = "Linux"
+  vnet_subnet_id = var.subnet_id
+
+  max_pods = var.system_extra_pool.max_pods
+
+  auto_scaling_enabled = true
+  min_count            = var.system_extra_pool.min_count
+  max_count            = var.system_extra_pool.max_count
+
+  depends_on = [azurerm_kubernetes_cluster.aks]
+}
+
   ## Azure CNI, network profile
   network_profile {
     network_plugin    = "azure"
