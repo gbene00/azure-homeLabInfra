@@ -1,5 +1,5 @@
 
-## Resource Modules
+## Resources Modules
 module "resources" {
   source = "./modules/resources"
 
