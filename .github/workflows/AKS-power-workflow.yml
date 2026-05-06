@@ -1,4 +1,4 @@
-name: AKS Start/Stop
+name: AKS Start-Stop
 
 on:
   workflow_dispatch:
